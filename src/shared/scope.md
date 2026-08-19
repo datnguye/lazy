@@ -1,0 +1,3 @@
+- Scope is over-engineering only. Correctness bugs, security holes, and performance go to a normal review pass
+- **Never** flag a smoke test, an `assert`-based self-check, a `lazy:` marker, a docstring, or a comment explaining a genuine *why*
+- Lists findings, applies nothing

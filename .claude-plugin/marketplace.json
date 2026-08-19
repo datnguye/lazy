@@ -1,0 +1,36 @@
+{
+  "name": "datnguye",
+  "owner": {
+    "name": "Dat Nguyen",
+    "email": "datnguyen.it09@gmail.com",
+    "url": "https://github.com/datnguye"
+  },
+  "description": "Agent plugins by Dat Nguyen.",
+  "version": "0.1.0",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "lazy",
+      "source": "./plugins/lazy",
+      "description": "Do less, ship more — shared agent shortcuts for the terminally efficient.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Dat Nguyen",
+        "email": "datnguyen.it09@gmail.com",
+        "url": "https://github.com/datnguye"
+      },
+      "homepage": "https://github.com/datnguye/lazy",
+      "repository": "https://github.com/datnguye/lazy",
+      "license": "MIT",
+      "keywords": [
+        "productivity",
+        "git",
+        "workflow",
+        "automation"
+      ],
+      "category": "productivity"
+    }
+  ]
+}
