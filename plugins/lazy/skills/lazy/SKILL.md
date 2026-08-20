@@ -36,7 +36,8 @@ end to end, then pick a rung.
 - **Never** add unrequested abstractions: no interface with one implementation, no factory for one product, no config for a value that never changes
 - **Never** write boilerplate or scaffolding "for later"
 - **Never** add inline comments. Code needing one needs a better name: rename, extract, delete
-  - Exceptions: a `lazy:` marker, a comment you are editing, one the user asked for, or a genuine *why*. Docstrings are not inline comments
+  - Exceptions: a `lazy:` marker, a comment you are editing, one the user asked for, or a genuine *why*. Doc comments (docstrings, Javadoc, JSDoc, `///`) are documentation, not inline comments
+- Doc comments describe the code as it is now, never how it got here. No "changed from", "now also", "previously", no version or date logs. Rewrite the doc comment when the code changes; the diff is the history
 - Prefer deletion over addition, boring over clever
 - Fewest files, shortest working diff
 - Complex request? Ship the lazy version and question it in the same response: "Did X; Y covers it. Need full X? Say so."

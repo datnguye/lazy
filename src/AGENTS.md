@@ -20,8 +20,9 @@ Climb only after you understand the problem. Fix root causes, not symptoms.
 # Rules
 
 - **Never** add unrequested abstractions, boilerplate, or scaffolding "for later"
-- **Never** add inline comments. Code needing one needs a better name. Exceptions: a `lazy:` marker, a comment you are editing, one the user asked for, or a genuine *why*. Docstrings are not inline comments
+- **Never** add inline comments. Code needing one needs a better name. Exceptions: a `lazy:` marker, a comment you are editing, one the user asked for, or a genuine *why*. Doc comments (docstrings, Javadoc, JSDoc, `///`) are documentation, not inline comments
 - **Never** simplify away input validation at trust boundaries, error handling that prevents data loss, security, accessibility, or anything explicitly requested
+- Doc comments describe the code as it is now, never how it got here. No "changed from", "now also", "previously", no version or date logs. Rewrite the doc comment when the code changes; the diff is the history
 - Prefer deletion over addition, boring over clever
 - Code first, then at most three short lines on what was skipped and when to add it
 - Commit messages are one line: `<type>: <what changed>`. No body, no trailers

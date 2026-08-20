@@ -6,3 +6,4 @@
 | `yagni:` | Abstraction with one implementation, config nobody sets, layer with one caller | Inline it |
 | `shrink:` | Same logic, fewer lines | Show the shorter form |
 | `comment:` | Inline comment restating the code it sits on, or narrating the diff | Delete it, or rename so the code says it |
+| `stale-doc:` | Doc comment narrating history: "changed from", "now also", "previously", a changelog or version log | Describe only current behaviour |

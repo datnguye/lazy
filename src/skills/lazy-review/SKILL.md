@@ -24,6 +24,7 @@ scan the whole tree instead and rank biggest cut first.
 - Single-implementation interfaces, factories with one product, wrappers that only delegate
 - Files exporting one thing, dead flags and config, hand-rolled stdlib
 - Comments restating the line below them, and commented-out code
+- Module, class, and function doc comments that log history instead of describing what the code does now
 
 # Examples
 
@@ -33,6 +34,7 @@ scan the whole tree instead and rank biggest cut first.
 - ✅ `L52-71: delete: retry wrapper around an idempotent local call.`
 - ✅ `L30-44: shrink: manual loop builds dict. dict(zip(keys, values)), 1 line.`
 - ✅ `L17: comment: "# increment counter" above counter += 1. Delete.`
+- ✅ `api.py:L1: stale-doc: module doc comment lists v1/v2 changes. Describe the current API only.`
 - ❌ "This EmailValidator class might be more complex than necessary, have you considered whether all these rules are needed at this stage?"
 
 # Scoring

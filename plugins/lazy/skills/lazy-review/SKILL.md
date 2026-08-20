@@ -28,6 +28,7 @@ scan the whole tree instead and rank biggest cut first.
 | `yagni:` | Abstraction with one implementation, config nobody sets, layer with one caller | Inline it |
 | `shrink:` | Same logic, fewer lines | Show the shorter form |
 | `comment:` | Inline comment restating the code it sits on, or narrating the diff | Delete it, or rename so the code says it |
+| `stale-doc:` | Doc comment narrating history: "changed from", "now also", "previously", a changelog or version log | Describe only current behaviour |
 
 # What to Hunt
 
@@ -35,6 +36,7 @@ scan the whole tree instead and rank biggest cut first.
 - Single-implementation interfaces, factories with one product, wrappers that only delegate
 - Files exporting one thing, dead flags and config, hand-rolled stdlib
 - Comments restating the line below them, and commented-out code
+- Module, class, and function doc comments that log history instead of describing what the code does now
 
 # Examples
 
@@ -44,6 +46,7 @@ scan the whole tree instead and rank biggest cut first.
 - ✅ `L52-71: delete: retry wrapper around an idempotent local call.`
 - ✅ `L30-44: shrink: manual loop builds dict. dict(zip(keys, values)), 1 line.`
 - ✅ `L17: comment: "# increment counter" above counter += 1. Delete.`
+- ✅ `api.py:L1: stale-doc: module doc comment lists v1/v2 changes. Describe the current API only.`
 - ❌ "This EmailValidator class might be more complex than necessary, have you considered whether all these rules are needed at this stage?"
 
 # Scoring
@@ -54,6 +57,6 @@ Nothing to cut: `Lean already. Ship.`
 # Boundaries
 
 - Scope is over-engineering only. Correctness bugs, security holes, and performance go to a normal review pass
-- **Never** flag a smoke test, an `assert`-based self-check, a `lazy:` marker, a docstring, or a comment explaining a genuine *why*
+- **Never** flag a smoke test, an `assert`-based self-check, a `lazy:` marker, a doc comment that describes current behaviour, or a comment explaining a genuine *why*
 - Lists findings, applies nothing
 Say "stop lazy" or "normal mode" to revert. Resume anytime with `/lazy`.
