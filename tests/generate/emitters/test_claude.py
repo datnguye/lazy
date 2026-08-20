@@ -16,6 +16,12 @@ def test_manifest_matches_plugin_yaml(src):
     assert manifest["author"] == src.plugin["author"]
 
 
+def test_manifest_omits_the_auto_loaded_hooks_file(src):
+    """Claude Code loads hooks/hooks.json itself; naming it again is a duplicate."""
+    manifest = json.loads(claude.emit(src)["plugins/lazy/.claude-plugin/plugin.json"])
+    assert "hooks" not in manifest
+
+
 def test_components_sit_outside_the_manifest_dir(src):
     for path in claude.emit(src):
         assert "/.claude-plugin/" not in path or path.endswith("plugin.json")

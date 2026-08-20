@@ -19,7 +19,6 @@ def _plugin_json(src: Sources) -> str:
         "repository": p["repository"],
         "license": p["license"],
         "keywords": p["keywords"],
-        "hooks": "./hooks/hooks.json",
     }
     return json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
 

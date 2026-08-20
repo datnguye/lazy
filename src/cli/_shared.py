@@ -13,7 +13,7 @@ from src.generate.emitters import ALL as EMITTERS
 from src.generate.emitters import BY_NAME, windsurf
 
 # Formats that share an output tree, where rendering one without the other
-# leaves a broken result: the Claude plugin.json points at hooks/hooks.json.
+# leaves a broken result: Claude Code auto-loads the plugin's hooks/hooks.json.
 COUPLED = {"claude": ("hooks",), "hooks": ("claude",)}
 
 RootOption = Annotated[

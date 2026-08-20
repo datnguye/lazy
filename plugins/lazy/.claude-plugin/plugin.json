@@ -15,6 +15,5 @@
     "minimalism",
     "code-review",
     "productivity"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
