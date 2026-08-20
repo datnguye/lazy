@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SessionStart",
+            "timeout": 5,
+            "statusMessage": "Loading lazy mode..."
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SubagentStart",
+            "timeout": 5,
+            "statusMessage": "Loading lazy mode..."
+          }
+        ]
+      }
+    ]
+  }
+}

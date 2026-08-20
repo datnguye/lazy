@@ -16,3 +16,7 @@ from src.generate.emitters import (
 )
 
 ALL = (claude, agents, cursor, windsurf, copilot, rules, hooks)
+
+# Emitters by the name the CLI exposes, so `--format claude` needs no lookup
+# table of its own.
+BY_NAME = {module.__name__.rsplit(".", 1)[-1]: module for module in ALL}

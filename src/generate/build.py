@@ -4,7 +4,9 @@ Pure rendering: no printing, no exit codes. The CLI in src/cli.py wraps these.
 """
 
 import shutil
+from collections.abc import Sequence
 from pathlib import Path
+from types import ModuleType
 
 from src.content.sources import Sources
 from src.generate.emitters import ALL as EMITTERS
@@ -30,10 +32,10 @@ GENERATED_DIRS = (
 )
 
 
-def render(src: Sources) -> dict[str, str]:
-    """Run every emitter and merge their output."""
+def render(src: Sources, emitters: Sequence[ModuleType] = EMITTERS) -> dict[str, str]:
+    """Run each emitter and merge their output."""
     out: dict[str, str] = {}
-    for emitter in EMITTERS:
+    for emitter in emitters:
         for path, text in emitter.emit(src).items():
             if path in out:
                 raise ValueError(f"two emitters both claim {path}")
@@ -41,38 +43,52 @@ def render(src: Sources) -> dict[str, str]:
     return out
 
 
-def write(rendered: dict[str, str], root: Path) -> None:
-    """Replace the generated tree with freshly rendered content.
+def owned_dirs(rendered: dict[str, str]) -> tuple[str, ...]:
+    """Return the generated dirs a render actually writes into.
 
-    Each generated directory keeps a .gitkeep so the structure survives a clone
-    even before anything is rendered into it; wiping the tree must not take
-    those with it.
+    A partial render must not wipe a format it was not asked to write, so the
+    dirs to clear come from the render itself rather than from GENERATED_DIRS.
     """
-    for rel in GENERATED_DIRS:
+    return tuple(
+        rel for rel in GENERATED_DIRS if any(path.startswith(f"{rel}/") for path in rendered)
+    )
+
+
+def write(rendered: dict[str, str], root: Path) -> None:
+    """Replace the rendered part of the generated tree with fresh content.
+
+    A .gitkeep only earns its place in an empty directory, so a dir that gets
+    real output loses it; `lazy clean` puts it back when the output goes away.
+    """
+    for rel in owned_dirs(rendered):
         target = root / rel
         shutil.rmtree(target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
-        (target / KEEP).touch()
     for rel, text in rendered.items():
         target = root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding="utf-8")
 
 
-def clean(root: Path) -> int:
+def clean(root: Path, rendered: dict[str, str] | None = None) -> int:
     """Delete generated output, leaving each directory and its .gitkeep behind.
 
     Files an emitter writes outside a generated directory (AGENTS.md and the
     Copilot repo-wide file) have no skeleton to preserve, so they go too.
+
+    Pass `rendered` to scope the wipe to one format's output; the paths it owns
+    come from the render itself, so cleaning one format never touches another.
     """
+    dirs = GENERATED_DIRS if rendered is None else owned_dirs(rendered)
+    loose = LOOSE_FILES if rendered is None else tuple(r for r in LOOSE_FILES if r in rendered)
     removed = 0
-    for rel in GENERATED_DIRS:
+    for rel in dirs:
         target = root / rel
         removed += sum(1 for p in target.rglob("*") if p.is_file() and p.name != KEEP)
         shutil.rmtree(target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
         (target / KEEP).touch()
-    for rel in LOOSE_FILES:
+    for rel in loose:
         path = root / rel
         if path.exists():
             path.unlink()
@@ -81,14 +97,18 @@ def clean(root: Path) -> int:
 
 
 def stale(rendered: dict[str, str], root: Path) -> list[str]:
-    """Return generated paths whose on-disk content differs from the render."""
+    """Return generated paths whose on-disk content differs from the render.
+
+    Orphans are only hunted in the dirs this render owns, so checking one
+    format never reports another format's files as strays.
+    """
     drifted = [
         rel
         for rel, text in rendered.items()
         if not (root / rel).exists() or (root / rel).read_text(encoding="utf-8") != text
     ]
     expected = set(rendered)
-    for rel in GENERATED_DIRS:
+    for rel in owned_dirs(rendered):
         base = root / rel
         if not base.exists():
             continue

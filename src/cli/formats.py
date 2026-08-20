@@ -2,15 +2,14 @@
 
 import typer
 
-from src.cli._shared import DEFAULT_ROOT, RootOption
+from src.cli._shared import DEFAULT_ROOT, FormatOption, RootOption, select
 from src.content import sources
-from src.generate.emitters import ALL as EMITTERS
 
 
-def formats(root: RootOption = DEFAULT_ROOT) -> None:
+def formats(root: RootOption = DEFAULT_ROOT, format: FormatOption = None) -> None:
     """List each output format and the files it generates."""
     src = sources.load(root / "src")
-    for emitter in EMITTERS:
+    for emitter in select(format):
         paths = emitter.emit(src)
         name = emitter.__name__.rsplit(".", 1)[-1]
         typer.secho(f"{name} ({len(paths)} files)", fg=typer.colors.CYAN, bold=True)

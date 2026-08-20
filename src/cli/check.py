@@ -2,13 +2,13 @@
 
 import typer
 
-from src.cli._shared import DEFAULT_ROOT, RootOption, render_all
+from src.cli._shared import DEFAULT_ROOT, FormatOption, RootOption, render_all
 from src.generate import build
 
 
-def check(root: RootOption = DEFAULT_ROOT) -> None:
+def check(root: RootOption = DEFAULT_ROOT, format: FormatOption = None) -> None:
     """Verify the generated files match src/, without writing anything."""
-    rendered = render_all(root)
+    rendered = render_all(root, format)
     drifted = build.stale(rendered, root)
     if drifted:
         typer.secho(

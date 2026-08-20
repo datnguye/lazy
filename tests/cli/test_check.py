@@ -17,3 +17,10 @@ def test_fails_on_drift(repo):
     result = runner.invoke(app, ["check", "--root", str(repo)])
     assert result.exit_code == 1
     assert "out of date" in result.output
+
+
+def test_format_checks_only_that_format(repo):
+    """A claude-only tree is up to date when only claude is checked."""
+    runner.invoke(app, ["render", "--root", str(repo), "--format", "claude"])
+    assert runner.invoke(app, ["check", "--root", str(repo), "--format", "claude"]).exit_code == 0
+    assert runner.invoke(app, ["check", "--root", str(repo)]).exit_code == 1

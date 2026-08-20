@@ -7,7 +7,7 @@ import pytest
 from src.content import sources
 from src.content.sources import ROOT
 from src.generate import build
-from src.generate.emitters import agents
+from src.generate.emitters import agents, cursor
 
 
 @pytest.fixture
@@ -80,15 +80,21 @@ def test_write_removes_renamed_sources(repo):
     assert (repo / ".cursor/rules/renamed.mdc").exists()
 
 
-def test_render_rejects_colliding_emitters(monkeypatch, src):
-    monkeypatch.setattr(build, "EMITTERS", (agents, agents))
+def test_render_rejects_colliding_emitters(src):
     with pytest.raises(ValueError, match="both claim"):
-        build.render(src)
+        build.render(src, (agents, agents))
 
 
-def test_write_keeps_the_directory_skeleton(repo):
-    """Generated dirs keep a .gitkeep so the structure survives a clone."""
+def test_write_drops_the_gitkeep_it_fills(repo):
+    """A .gitkeep only holds an empty dir; real output makes it redundant."""
     build.write(rendered(repo), repo)
+    for rel in build.GENERATED_DIRS:
+        assert not (repo / rel / build.KEEP).exists(), rel
+
+
+def test_clean_restores_the_gitkeep_skeleton(repo):
+    build.write(rendered(repo), repo)
+    build.clean(repo)
     for rel in build.GENERATED_DIRS:
         assert (repo / rel / build.KEEP).exists(), rel
 
@@ -99,7 +105,19 @@ def test_gitkeep_is_not_reported_as_an_orphan(repo):
     assert not any(p.endswith(build.KEEP) for p in build.stale(out, repo))
 
 
-def test_write_recreates_the_skeleton_when_dirs_are_missing(repo):
+def test_write_recreates_dirs_that_are_missing(repo):
     shutil.rmtree(repo / ".cursor", ignore_errors=True)
     build.write(rendered(repo), repo)
-    assert (repo / ".cursor/rules" / build.KEEP).exists()
+    assert (repo / ".cursor/rules/lazy.mdc").exists()
+
+
+def test_owned_dirs_only_covers_what_was_rendered(repo):
+    out = build.render(sources.load(repo / "src"), (cursor,))
+    assert build.owned_dirs(out) == (".cursor/rules",)
+
+
+def test_partial_write_leaves_other_dirs_intact(repo):
+    build.write(rendered(repo), repo)
+    build.write(build.render(sources.load(repo / "src"), (cursor,)), repo)
+    assert (repo / "AGENTS.md").exists()
+    assert (repo / ".windsurf/rules/lazy.md").exists()
