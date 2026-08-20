@@ -35,7 +35,9 @@ jobs:
         run: uv run lazy check
 
       - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Validate marketplace manifest
         run: claude plugin validate .
