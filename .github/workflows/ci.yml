@@ -44,3 +44,28 @@ jobs:
 
       - name: Validate plugin manifest
         run: claude plugin validate ./plugins/lazy
+
+  install:
+    name: Install from the marketplace
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Claude Code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Add the marketplace
+        run: claude plugin marketplace add datnguye/lazy
+
+      - name: Install the plugin
+        run: claude plugin install lazy@datnguye -y
+
+      - name: Plugin is installed
+        run: |
+          claude plugin list --json | tee installed.json
+          grep -q 'lazy@datnguye' installed.json
+
+      - name: Components load
+        run: claude plugin details lazy@datnguye

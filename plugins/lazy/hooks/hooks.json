@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SessionStart",
+            "command": "for py in python3 python py; do command -v \"$py\" >/dev/null 2>&1 && exec \"$py\" \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SessionStart; done; echo \"lazy: no Python interpreter found on PATH (tried python3, python, py)\" >&2; exit 1",
             "timeout": 5,
             "statusMessage": "Loading lazy mode..."
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SubagentStart",
+            "command": "for py in python3 python py; do command -v \"$py\" >/dev/null 2>&1 && exec \"$py\" \"${CLAUDE_PLUGIN_ROOT}/hooks/lazy.py\" SubagentStart; done; echo \"lazy: no Python interpreter found on PATH (tried python3, python, py)\" >&2; exit 1",
             "timeout": 5,
             "statusMessage": "Loading lazy mode..."
           }

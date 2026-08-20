@@ -40,7 +40,47 @@ def test_config_wires_both_start_events(src):
     for event, entries in config["hooks"].items():
         command = entries[0]["hooks"][0]["command"]
         assert "${CLAUDE_PLUGIN_ROOT}" in command
-        assert command.endswith(event)
+        assert f'lazy.py" {event}' in command
+
+
+def test_command_falls_back_past_a_missing_python3(src, tmp_path):
+    """Windows has no `python3`; the command must find `python` or `py` instead."""
+    out = hooks.emit(src)
+    (tmp_path / "hooks").mkdir()
+    (tmp_path / "hooks/lazy.py").write_text(out["plugins/lazy/hooks/lazy.py"], encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    only = bin_dir / "python"
+    only.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n', encoding="utf-8")
+    only.chmod(0o755)
+
+    command = json.loads(out["plugins/lazy/hooks/hooks.json"])["hooks"]["SessionStart"][0]["hooks"][
+        0
+    ]["command"]
+    result = subprocess.run(
+        ["bash", "-c", command],
+        capture_output=True,
+        text=True,
+        check=True,
+        env={"PATH": f"{bin_dir}:/usr/bin:/bin", "CLAUDE_PLUGIN_ROOT": str(tmp_path)},
+    )
+    assert "# Lazy" in result.stdout
+
+
+def test_command_fails_loudly_without_any_interpreter(src, tmp_path):
+    command = json.loads(hooks.emit(src)["plugins/lazy/hooks/hooks.json"])["hooks"]["SessionStart"][
+        0
+    ]["hooks"][0]["command"]
+    empty = tmp_path / "bin"
+    empty.mkdir()
+    result = subprocess.run(
+        ["bash", "-c", f"PATH={empty}; {command}"],
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin", "CLAUDE_PLUGIN_ROOT": str(tmp_path)},
+    )
+    assert result.returncode == 1
+    assert "no Python interpreter found" in result.stderr
 
 
 def test_emits_nothing_without_a_core_skill(src):
