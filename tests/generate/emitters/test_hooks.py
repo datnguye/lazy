@@ -29,6 +29,21 @@ def run(script, event, **env):
     return result.stdout
 
 
+@pytest.mark.parametrize("event", ("SessionStart", "SubagentStart"))
+def test_writes_utf8_under_a_legacy_console_encoding(script, event):
+    """A Windows console gives sys.stdout cp1252, which cannot encode the arrow."""
+    result = subprocess.run(
+        [sys.executable, str(script), event],
+        capture_output=True,
+        check=True,
+        env={"PATH": "/usr/bin:/bin", "PYTHONIOENCODING": "cp1252"},
+    )
+    body = result.stdout.decode("utf-8")
+    if event == "SubagentStart":
+        body = json.loads(body)["hookSpecificOutput"]["additionalContext"]
+    assert "\u2192" in body
+
+
 def test_emits_script_and_config(src):
     out = hooks.emit(src)
     assert set(out) == {"plugins/lazy/hooks/lazy.py", "plugins/lazy/hooks/hooks.json"}

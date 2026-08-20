@@ -82,12 +82,10 @@ def main() -> int:
     event = sys.argv[1] if len(sys.argv) > 1 else "SessionStart"
     body = INSTRUCTIONS + "\n\nActive intensity: " + MODE + "."
     if event == "SubagentStart":
-        json.dump(
-            {"hookSpecificOutput": {"hookEventName": event, "additionalContext": body}},
-            sys.stdout,
+        body = json.dumps(
+            {"hookSpecificOutput": {"hookEventName": event, "additionalContext": body}}
         )
-    else:
-        sys.stdout.write(body)
+    sys.stdout.buffer.write(body.encode("utf-8"))
     return 0
 
 

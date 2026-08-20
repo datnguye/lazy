@@ -20,7 +20,9 @@ INTERPRETERS = ("python3", "python", "py")
 MISSING = "lazy: no Python interpreter found on PATH (tried python3, python, py)"
 
 # SessionStart takes raw stdout; SubagentStart drops it unless wrapped in the
-# hookSpecificOutput JSON form.
+# hookSpecificOutput JSON form. Both write encoded bytes: the instructions are
+# UTF-8, and a Windows console defaults sys.stdout to cp1252, which raises
+# UnicodeEncodeError on any character outside it.
 SCRIPT = '''#!/usr/bin/env python3
 {banner}
 """Inject lazy mode at the start of every Claude Code session."""
@@ -41,12 +43,10 @@ def main() -> int:
     event = sys.argv[1] if len(sys.argv) > 1 else "SessionStart"
     body = INSTRUCTIONS + "\\n\\nActive intensity: " + MODE + "."
     if event == "SubagentStart":
-        json.dump(
-            {{"hookSpecificOutput": {{"hookEventName": event, "additionalContext": body}}}},
-            sys.stdout,
+        body = json.dumps(
+            {{"hookSpecificOutput": {{"hookEventName": event, "additionalContext": body}}}}
         )
-    else:
-        sys.stdout.write(body)
+    sys.stdout.buffer.write(body.encode("utf-8"))
     return 0
 
 
