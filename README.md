@@ -20,7 +20,7 @@ times would be, of all things, not lazy.
 /plugin install lazy@datnguye
 ```
 
-GitHub Copilot CLI, from your shell:
+- GitHub Copilot CLI, from your shell:
 
 ```bash
 copilot plugin marketplace add datnguye/lazy
