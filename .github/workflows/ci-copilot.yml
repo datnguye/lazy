@@ -67,3 +67,8 @@ jobs:
 
       - name: Components load
         run: copilot skill list --json | jq -e 'any(.[]; .name == "lazy" and .enabled)'
+
+      - name: Activation hook injects the ladder
+        run: |
+          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+            | jq -e '.additionalContext | contains("Needs to exist at all")'

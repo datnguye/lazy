@@ -4,6 +4,7 @@ import json
 
 from src.content import frontmatter
 from src.content.sources import Doc, Sources
+from src.generate.emitters import hooks
 
 BANNER = "<!-- Generated from src/ by src/build.py. Do not edit. -->"
 
@@ -15,6 +16,10 @@ PLUGIN_ROOT = "plugins-copilot"
 # Copilot searches .plugin/, ./, .github/plugin/, and .claude-plugin/ for both
 # manifests. This tree is Copilot's alone, so it uses the vendor-neutral one.
 MANIFEST_DIR = ".plugin"
+
+# Copilot's sessionStart reads a JSON object from stdout and injects its
+# additionalContext, one level shallower than the shape Claude's events take.
+HOOK_EVENT = "sessionStart"
 
 
 def _instruction(doc: Doc) -> str:
@@ -84,20 +89,44 @@ def _skill(doc: Doc) -> str:
     return frontmatter.render(meta, f"{BANNER}\n\n{doc.body}")
 
 
+def _hooks_json(name: str) -> str:
+    """Wire sessionStart to the shared activation script."""
+    script = f'"${{PLUGIN_ROOT}}/hooks/{name}.py"'
+    config = {
+        "version": 1,
+        "hooks": {
+            HOOK_EVENT: [
+                {
+                    "type": "command",
+                    "bash": hooks.command(script, HOOK_EVENT),
+                    "timeoutSec": 5,
+                }
+            ]
+        },
+    }
+    return json.dumps(config, indent=2) + "\n"
+
+
 def emit(src: Sources) -> dict[str, str]:
     """Return Copilot's instruction files plus its own installable plugin tree."""
     out = {".github/copilot-instructions.md": f"{BANNER}\n\n{src.guidance}"}
     for doc in src.skills:
         out[f".github/instructions/{doc.slug}.instructions.md"] = _instruction(doc)
 
-    root = f"{PLUGIN_ROOT}/{src.plugin['name']}"
+    name = src.plugin["name"]
+    root = f"{PLUGIN_ROOT}/{name}"
     out[f"{PLUGIN_ROOT}/{MANIFEST_DIR}/marketplace.json"] = _marketplace_json(src)
     out[f"{root}/{MANIFEST_DIR}/plugin.json"] = _plugin_json(src)
     for doc in src.skills:
         out[f"{root}/skills/{doc.slug}/SKILL.md"] = _skill(doc)
         for extra in doc.extras:
             out[f"{root}/skills/{doc.slug}/{extra.name}"] = extra.read_text(encoding="utf-8")
-    out[f"{root}/README.md"] = (
-        f"{BANNER}\n\n# {src.plugin['name']}\n\n{src.plugin['description']}\n"
-    )
+    out[f"{root}/README.md"] = f"{BANNER}\n\n# {name}\n\n{src.plugin['description']}\n"
+
+    core = next((d for d in src.skills if d.slug == name), None)
+    if core is not None:
+        out[f"{root}/hooks/{name}.py"] = hooks.SCRIPT.format(
+            banner=hooks.BANNER, instructions=hooks.literal(core.body)
+        )
+        out[f"{root}/hooks/hooks.json"] = _hooks_json(name)
     return out

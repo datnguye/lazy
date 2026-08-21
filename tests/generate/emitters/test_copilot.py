@@ -1,6 +1,8 @@
 """Tests for the GitHub Copilot emitter."""
 
 import json
+import subprocess
+import sys
 
 from src.content import frontmatter
 from src.generate.emitters import copilot
@@ -89,3 +91,35 @@ def test_skill_extras_travel_with_the_skill(src, tmp_path):
     out = copilot.emit(src)
     slug = src.skills[0].slug
     assert out[f"{copilot.PLUGIN_ROOT}/lazy/skills/{slug}/helper.py"] == "x = 1\n"
+
+
+def test_plugin_ships_a_session_start_hook(src):
+    config = json.loads(copilot.emit(src)[f"{copilot.PLUGIN_ROOT}/lazy/hooks/hooks.json"])
+    assert config["version"] == 1
+    assert copilot.HOOK_EVENT in config["hooks"]
+
+
+def test_hook_runs_the_generated_script(src):
+    config = json.loads(copilot.emit(src)[f"{copilot.PLUGIN_ROOT}/lazy/hooks/hooks.json"])
+    hook = config["hooks"][copilot.HOOK_EVENT][0]
+    assert hook["type"] == "command"
+    assert "${PLUGIN_ROOT}/hooks/lazy.py" in hook["bash"]
+    assert copilot.HOOK_EVENT in hook["bash"]
+
+
+def test_hook_injects_additional_context_at_the_top_level(src, tmp_path):
+    """Copilot reads additionalContext one level shallower than Claude does."""
+    script = tmp_path / "lazy.py"
+    script.write_text(copilot.emit(src)[f"{copilot.PLUGIN_ROOT}/lazy/hooks/lazy.py"])
+    out = subprocess.run(
+        [sys.executable, str(script), copilot.HOOK_EVENT],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert list(json.loads(out.stdout)) == ["additionalContext"]
+
+
+def test_a_plugin_without_the_core_skill_ships_no_hook(src):
+    src.plugin["name"] = "absent"
+    assert not any(p.endswith("hooks.json") for p in copilot.emit(src))

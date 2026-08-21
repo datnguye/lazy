@@ -30,7 +30,7 @@ line-length = 100
 target-version = "py311"
 # Generated output embeds authored markdown; its line lengths are the skill's,
 # not the generator's. Lint the source, not the render.
-extend-exclude = ["plugins"]
+extend-exclude = ["plugins", "plugins-copilot"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "PLC0415"]

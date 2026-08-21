@@ -46,6 +46,8 @@ def main() -> int:
         body = json.dumps(
             {{"hookSpecificOutput": {{"hookEventName": event, "additionalContext": body}}}}
         )
+    elif event == "sessionStart":
+        body = json.dumps({{"additionalContext": body}})
     sys.stdout.buffer.write(body.encode("utf-8"))
     return 0
 
@@ -55,12 +57,12 @@ if __name__ == "__main__":
 '''
 
 
-def _literal(body: str) -> str:
+def literal(body: str) -> str:
     """Escape a skill body for embedding in a triple-quoted string literal."""
     return body.replace("\\", "\\\\").replace('"""', '\\"\\"\\"')
 
 
-def _command(script: str, event: str) -> str:
+def command(script: str, event: str) -> str:
     """Run the script under the first Python interpreter that exists."""
     candidates = " ".join(INTERPRETERS)
     return (
@@ -85,7 +87,7 @@ def _config(name: str) -> str:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": _command(script, event),
+                        "command": command(script, event),
                         "timeout": 5,
                         "statusMessage": "Loading lazy mode...",
                     }
@@ -104,7 +106,7 @@ def emit(src: Sources) -> dict[str, str]:
     if core is None:
         return {}
     root = f"plugins/{name}"
-    script = SCRIPT.format(banner=BANNER, instructions=_literal(core.body))
+    script = SCRIPT.format(banner=BANNER, instructions=literal(core.body))
     return {
         f"{root}/hooks/{name}.py": script,
         f"{root}/hooks/hooks.json": _config(name),
