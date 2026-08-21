@@ -1,0 +1,19 @@
+{
+  "name": "lazy",
+  "version": "0.1.0",
+  "description": "Lazy senior dev mode. Lazy is not lack of awareness — it is full context awareness. YAGNI, stdlib first, no unrequested abstractions.",
+  "author": {
+    "name": "Dat Nguyen",
+    "email": "datnguyen.it09@gmail.com",
+    "url": "https://github.com/datnguye"
+  },
+  "homepage": "https://github.com/datnguye/lazy",
+  "repository": "https://github.com/datnguye/lazy",
+  "license": "MIT",
+  "keywords": [
+    "yagni",
+    "minimalism",
+    "code-review",
+    "productivity"
+  ]
+}

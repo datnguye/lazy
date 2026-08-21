@@ -21,6 +21,7 @@ KEEP = ".gitkeep"
 # renamed source never leaves an orphan behind.
 GENERATED_DIRS = (
     "plugins",
+    "plugins-copilot",
     ".agents/skills",
     ".cursor/rules",
     ".windsurf/rules",
