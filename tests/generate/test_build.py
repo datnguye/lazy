@@ -29,7 +29,7 @@ def test_write_emits_every_format(repo):
         "AGENTS.md",
         ".cursor/rules/lazy.mdc",
         ".windsurf/rules/lazy.md",
-        "plugins-copilot/lazy/.plugin/plugin.json",
+        "plugins-copilot/lazy/hooks/hooks.json",
         ".kiro/steering/lazy.md",
         ".qoder/rules/lazy.md",
         ".clinerules/lazy.md",

@@ -22,22 +22,6 @@ MANIFEST_DIR = ".plugin"
 HOOK_EVENT = "sessionStart"
 
 
-def _plugin_json(src: Sources) -> str:
-    """Render the plugin manifest Copilot reads from .plugin/."""
-    p = src.plugin
-    manifest = {
-        "name": p["name"],
-        "version": p["version"],
-        "description": p["description"],
-        "author": p["author"],
-        "homepage": p["homepage"],
-        "repository": p["repository"],
-        "license": p["license"],
-        "keywords": p["keywords"],
-    }
-    return json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
-
-
 def _marketplace_json(src: Sources) -> str:
     """Render the root marketplace manifest.
 
@@ -107,7 +91,6 @@ def emit(src: Sources) -> dict[str, str]:
     root = f"{PLUGIN_ROOT}/{name}"
     out = {
         f"{MANIFEST_DIR}/marketplace.json": _marketplace_json(src),
-        f"{root}/{MANIFEST_DIR}/plugin.json": _plugin_json(src),
         f"{root}/README.md": f"{BANNER}\n\n# {name}\n\n{src.plugin['description']}\n",
     }
     for doc in src.skills:

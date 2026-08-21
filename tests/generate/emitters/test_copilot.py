@@ -11,8 +11,7 @@ from tests.conftest import doc
 
 def test_plugin_tree_is_separate_from_the_claude_one(src):
     out = copilot.emit(src)
-    root = f"{copilot.PLUGIN_ROOT}/lazy"
-    assert f"{root}/{copilot.MANIFEST_DIR}/plugin.json" in out
+    assert f"{copilot.PLUGIN_ROOT}/lazy/hooks/hooks.json" in out
     assert not any(p.startswith("plugins/") for p in out)
 
 
