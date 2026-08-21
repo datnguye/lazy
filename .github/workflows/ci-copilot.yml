@@ -28,22 +28,27 @@ jobs:
         run: uv sync --all-groups
 
       - name: Render
-        run: uv run lazy render -f copilot -f agents
+        run: uv run lazy render -f copilot
 
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Instructions are where Copilot looks
+      - name: The rendered plugin installs
         run: |
-          test -f .github/copilot-instructions.md
-          ls .github/instructions/*.instructions.md
+          copilot plugin marketplace add "$PWD/plugins-copilot"
+          copilot plugin install lazy@datnguye
 
-      - name: Skills load
+      - name: Every skill loads
         run: |
           copilot skill list --json | tee skills.json
           for s in lazy lazy-review lazy-debt; do
             jq -e --arg s "$s" 'any(.[]; .name == $s and .enabled)' skills.json
           done
+
+      - name: Activation hook injects the ladder
+        run: |
+          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+            | jq -e '.additionalContext | contains("Needs to exist at all")'
 
   install:
     name: Install from the marketplace

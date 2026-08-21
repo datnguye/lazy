@@ -1,4 +1,4 @@
-"""Render sources into GitHub Copilot's .github/ layout and its own plugin tree."""
+"""Render sources into an installable GitHub Copilot plugin."""
 
 import json
 
@@ -20,17 +20,6 @@ MANIFEST_DIR = ".plugin"
 # Copilot's sessionStart reads a JSON object from stdout and injects its
 # additionalContext, one level shallower than the shape Claude's events take.
 HOOK_EVENT = "sessionStart"
-
-
-def _instruction(doc: Doc) -> str:
-    """Render a path-scoped instruction file; applyTo takes a glob string."""
-    globs = doc.meta.get("globs") or "**"
-    meta = {
-        "name": doc.slug,
-        "description": doc.description,
-        "applyTo": ", ".join(globs) if isinstance(globs, list) else globs,
-    }
-    return frontmatter.render(meta, f"{BANNER}\n\n{doc.body}")
 
 
 def _plugin_json(src: Sources) -> str:
@@ -108,20 +97,23 @@ def _hooks_json(name: str) -> str:
 
 
 def emit(src: Sources) -> dict[str, str]:
-    """Return Copilot's instruction files plus its own installable plugin tree."""
-    out = {".github/copilot-instructions.md": f"{BANNER}\n\n{src.guidance}"}
-    for doc in src.skills:
-        out[f".github/instructions/{doc.slug}.instructions.md"] = _instruction(doc)
+    """Return the installable plugin tree.
 
+    Copilot reaches this plugin only through `copilot plugin install`, so no
+    repo-level instruction files are rendered: nobody clones this repository to
+    pick up the rules.
+    """
     name = src.plugin["name"]
     root = f"{PLUGIN_ROOT}/{name}"
-    out[f"{PLUGIN_ROOT}/{MANIFEST_DIR}/marketplace.json"] = _marketplace_json(src)
-    out[f"{root}/{MANIFEST_DIR}/plugin.json"] = _plugin_json(src)
+    out = {
+        f"{PLUGIN_ROOT}/{MANIFEST_DIR}/marketplace.json": _marketplace_json(src),
+        f"{root}/{MANIFEST_DIR}/plugin.json": _plugin_json(src),
+        f"{root}/README.md": f"{BANNER}\n\n# {name}\n\n{src.plugin['description']}\n",
+    }
     for doc in src.skills:
         out[f"{root}/skills/{doc.slug}/SKILL.md"] = _skill(doc)
         for extra in doc.extras:
             out[f"{root}/skills/{doc.slug}/{extra.name}"] = extra.read_text(encoding="utf-8")
-    out[f"{root}/README.md"] = f"{BANNER}\n\n# {name}\n\n{src.plugin['description']}\n"
 
     core = next((d for d in src.skills if d.slug == name), None)
     if core is not None:

@@ -9,42 +9,6 @@ from src.generate.emitters import copilot
 from tests.conftest import doc
 
 
-def test_instruction_scopes_with_apply_to(src):
-    meta, _ = frontmatter.parse(copilot.emit(src)[".github/instructions/lazy.instructions.md"])
-    assert meta["applyTo"] == "**"
-
-
-def test_instruction_defaults_apply_to_everything():
-    assert frontmatter.parse(copilot._instruction(doc()))[0]["applyTo"] == "**"
-
-
-def test_instruction_joins_glob_lists():
-    assert frontmatter.parse(copilot._instruction(doc(globs=["a", "b"])))[0]["applyTo"] == "a, b"
-
-
-def test_repo_wide_file_has_no_frontmatter(src):
-    """Copilot reads .github/copilot-instructions.md raw; frontmatter would leak into it."""
-    meta, _ = frontmatter.parse(copilot.emit(src)[".github/copilot-instructions.md"])
-    assert meta == {}
-
-
-def test_emits_the_paths_copilot_looks_in(src):
-    out = copilot.emit(src)
-    assert ".github/copilot-instructions.md" in out
-    scoped = [p for p in out if p.startswith(".github/instructions/")]
-    assert scoped
-    for path in scoped:
-        assert path.endswith(".instructions.md"), path
-    for path in out:
-        assert path.startswith((".github/", f"{copilot.PLUGIN_ROOT}/")), path
-
-
-def test_every_instruction_declares_apply_to(src):
-    for path, text in copilot.emit(src).items():
-        if path.startswith(".github/instructions/"):
-            assert frontmatter.parse(text)[0]["applyTo"], path
-
-
 def test_plugin_tree_is_separate_from_the_claude_one(src):
     out = copilot.emit(src)
     root = f"{copilot.PLUGIN_ROOT}/lazy"

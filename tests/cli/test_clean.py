@@ -44,11 +44,11 @@ def test_format_cleans_only_that_format(repo):
 
 
 def test_format_cleans_the_loose_file_it_owns(repo):
-    """AGENTS.md belongs to the agents format; Copilot's repo-wide file does not."""
+    """AGENTS.md belongs to the agents format, so another format's clean keeps it."""
     runner.invoke(app, ["render", "--root", str(repo)])
     runner.invoke(app, ["clean", "--root", str(repo), "--format", "agents"])
     assert not (repo / "AGENTS.md").exists()
-    assert (repo / ".github/copilot-instructions.md").exists()
+    assert (repo / "plugins-copilot/lazy/.plugin/plugin.json").exists()
 
 
 def test_format_clean_then_render_restores_it(repo):
