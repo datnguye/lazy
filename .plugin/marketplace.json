@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "lazy",
-      "source": "./lazy",
+      "source": "./plugins-copilot/lazy",
       "description": "Lazy senior dev mode. Lazy is not lack of awareness — it is full context awareness. YAGNI, stdlib first, no unrequested abstractions.",
       "version": "0.1.0",
       "author": {

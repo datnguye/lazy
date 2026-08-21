@@ -8,6 +8,7 @@ on:
       - pyproject.toml
       - uv.lock
       - plugins-copilot/**
+      - .plugin/**
       - .github/workflows/ci-copilot.yml
   pull_request:
     paths: *paths
@@ -17,10 +18,10 @@ jobs:
     name: Validate the rendered plugin
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
 
@@ -35,7 +36,7 @@ jobs:
 
       - name: The rendered plugin installs
         run: |
-          copilot plugin marketplace add "$PWD/plugins-copilot"
+          copilot plugin marketplace add "$PWD"
           copilot plugin install lazy@datnguye
 
       - name: Every skill loads
@@ -60,7 +61,7 @@ jobs:
         run: npm install -g @github/copilot
 
       - name: Add the marketplace
-        run: copilot plugin marketplace add datnguye/lazy:plugins-copilot
+        run: copilot plugin marketplace add datnguye/lazy
 
       - name: Install the plugin
         run: copilot plugin install lazy@datnguye

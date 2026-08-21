@@ -8,13 +8,13 @@ from src.generate.emitters import hooks
 
 BANNER = "<!-- Generated from src/ by src/build.py. Do not edit. -->"
 
-# Copilot's own plugin root. It resolves a marketplace entry's source relative
-# to pluginRoot, where Claude resolves it from the repo root, so the two cannot
-# share one marketplace.json. A separate tree keeps both installable.
+# Copilot's own plugin tree, kept apart from Claude's so neither manifest has
+# to satisfy both CLIs' source resolution.
 PLUGIN_ROOT = "plugins-copilot"
 
-# Copilot searches .plugin/, ./, .github/plugin/, and .claude-plugin/ for both
-# manifests. This tree is Copilot's alone, so it uses the vendor-neutral one.
+# `copilot plugin marketplace add` reads a manifest only from the repo root --
+# it has no subdirectory syntax -- so the marketplace lives there. Copilot
+# searches .plugin/ before .claude-plugin/, which leaves Claude's untouched.
 MANIFEST_DIR = ".plugin"
 
 # Copilot's sessionStart reads a JSON object from stdout and injects its
@@ -22,27 +22,11 @@ MANIFEST_DIR = ".plugin"
 HOOK_EVENT = "sessionStart"
 
 
-def _plugin_json(src: Sources) -> str:
-    """Render the plugin manifest Copilot reads from .plugin/."""
-    p = src.plugin
-    manifest = {
-        "name": p["name"],
-        "version": p["version"],
-        "description": p["description"],
-        "author": p["author"],
-        "homepage": p["homepage"],
-        "repository": p["repository"],
-        "license": p["license"],
-        "keywords": p["keywords"],
-    }
-    return json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
-
-
 def _marketplace_json(src: Sources) -> str:
-    """Render the marketplace manifest.
+    """Render the root marketplace manifest.
 
-    Copilot resolves each entry's source against the marketplace root, so the
-    plugin sits one level down as ./<name>; no pluginRoot is declared.
+    Copilot resolves each entry's source against the marketplace root, which is
+    the repository root here; no pluginRoot is declared.
     """
     p = src.plugin
     manifest = {
@@ -53,7 +37,7 @@ def _marketplace_json(src: Sources) -> str:
         "plugins": [
             {
                 "name": p["name"],
-                "source": f"./{p['name']}",
+                "source": f"./{PLUGIN_ROOT}/{p['name']}",
                 "description": p["description"],
                 "version": p["version"],
                 "author": p["author"],
@@ -106,8 +90,7 @@ def emit(src: Sources) -> dict[str, str]:
     name = src.plugin["name"]
     root = f"{PLUGIN_ROOT}/{name}"
     out = {
-        f"{PLUGIN_ROOT}/{MANIFEST_DIR}/marketplace.json": _marketplace_json(src),
-        f"{root}/{MANIFEST_DIR}/plugin.json": _plugin_json(src),
+        f"{MANIFEST_DIR}/marketplace.json": _marketplace_json(src),
         f"{root}/README.md": f"{BANNER}\n\n# {name}\n\n{src.plugin['description']}\n",
     }
     for doc in src.skills:
