@@ -1,0 +1,79 @@
+name: GitHub Copilot
+
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - src/**
+      - pyproject.toml
+      - uv.lock
+      - plugins-copilot/**
+      - .github/workflows/ci-copilot.yml
+  pull_request:
+    paths: *paths
+
+jobs:
+  render:
+    name: Validate the rendered plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Render
+        run: uv run lazy render -f copilot
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: The rendered plugin installs
+        run: |
+          copilot plugin marketplace add "$PWD/plugins-copilot"
+          copilot plugin install lazy@datnguye
+
+      - name: Every skill loads
+        run: |
+          copilot skill list --json | tee skills.json
+          for s in lazy lazy-review lazy-debt; do
+            jq -e --arg s "$s" 'any(.[]; .name == $s and .enabled)' skills.json
+          done
+
+      - name: Activation hook injects the ladder
+        run: |
+          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+            | jq -e '.additionalContext | contains("Needs to exist at all")'
+
+  install:
+    name: Install from the marketplace
+    if: github.event_name == 'push'
+    needs: render
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Add the marketplace
+        run: copilot plugin marketplace add datnguye/lazy:plugins-copilot
+
+      - name: Install the plugin
+        run: copilot plugin install lazy@datnguye
+
+      - name: Plugin is installed
+        run: |
+          copilot plugin list | tee installed.txt
+          grep -q 'lazy@datnguye' installed.txt
+
+      - name: Components load
+        run: copilot skill list --json | jq -e 'any(.[]; .name == "lazy" and .enabled)'
+
+      - name: Activation hook injects the ladder
+        run: |
+          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+            | jq -e '.additionalContext | contains("Needs to exist at all")'

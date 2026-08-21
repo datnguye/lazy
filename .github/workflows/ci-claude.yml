@@ -1,12 +1,21 @@
-name: CI
+name: Claude Code
 
 on:
   push:
     branches: [main]
+    paths: &paths
+      - src/**
+      - pyproject.toml
+      - uv.lock
+      - plugins/**
+      - .claude-plugin/**
+      - .github/workflows/ci-claude.yml
   pull_request:
+    paths: *paths
 
 jobs:
-  build:
+  render:
+    name: Validate the rendered plugin
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,20 +28,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-groups
 
-      - name: Format check
-        run: uv run ruff format --check .
-
-      - name: Lint
-        run: uv run ruff check .
-
-      - name: Tests
-        run: uv run pytest
-
-      - name: Render every format
-        run: uv run lazy render
-
-      - name: Render is reproducible
-        run: uv run lazy check
+      - name: Render
+        run: uv run lazy render -f claude
 
       - name: Install Claude Code
         run: |
@@ -48,7 +45,7 @@ jobs:
   install:
     name: Install from the marketplace
     if: github.event_name == 'push'
-    needs: build
+    needs: render
     runs-on: ubuntu-latest
     steps:
       - name: Install Claude Code

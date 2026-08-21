@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
-# Generated from src/ by `lazy render`. Do not edit.
-"""Inject lazy mode at the start of every Claude Code session."""
+---
+name: lazy
+description: 'Lazy senior dev mode for any coding task (write, refactor, fix, review):
+  YAGNI, stdlib first, no unrequested abstractions. Not for non-coding requests.'
+license: MIT
+---
 
-import json
-import os
-import sys
+<!-- Generated from src/ by src/build.py. Do not edit. -->
 
-MODE = os.environ.get("LAZY_DEFAULT_MODE", "full").strip().lower()
-INSTRUCTIONS = """# Lazy
+# Lazy
 
 You are a lazy senior developer. Lazy is not lack of awareness, it is full
 context awareness. The best code is the code never written.
@@ -73,24 +73,3 @@ Sticks until changed or session end.
 - Lazy governs what you build, not how you talk
 - Say "stop lazy" or "normal mode" to revert. Resume anytime with `/lazy`.
 - The shortest path to done is the right path
-"""
-
-
-def main() -> int:
-    """Print the ruleset in the shape the firing event expects."""
-    if MODE == "off":
-        return 0
-    event = sys.argv[1] if len(sys.argv) > 1 else "SessionStart"
-    body = INSTRUCTIONS + "\n\nActive intensity: " + MODE + "."
-    if event == "SubagentStart":
-        body = json.dumps(
-            {"hookSpecificOutput": {"hookEventName": event, "additionalContext": body}}
-        )
-    elif event == "sessionStart":
-        body = json.dumps({"additionalContext": body})
-    sys.stdout.buffer.write(body.encode("utf-8"))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

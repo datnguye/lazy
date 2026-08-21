@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "for py in python3 python py; do command -v \"$py\" >/dev/null 2>&1 && exec \"$py\" \"${PLUGIN_ROOT}/hooks/lazy.py\" sessionStart; done; echo \"lazy: no Python interpreter found on PATH (tried python3, python, py)\" >&2; exit 1",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}

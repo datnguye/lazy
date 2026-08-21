@@ -12,7 +12,7 @@ from src.content.sources import Sources
 from src.generate.emitters import ALL as EMITTERS
 
 # Generated files that live outside any generated directory.
-LOOSE_FILES = ("AGENTS.md", ".github/copilot-instructions.md")
+LOOSE_FILES = ("AGENTS.md",)
 
 # Placeholder that keeps an otherwise-empty generated directory in git.
 KEEP = ".gitkeep"
@@ -21,10 +21,10 @@ KEEP = ".gitkeep"
 # renamed source never leaves an orphan behind.
 GENERATED_DIRS = (
     "plugins",
+    "plugins-copilot",
     ".agents/skills",
     ".cursor/rules",
     ".windsurf/rules",
-    ".github/instructions",
     ".kiro/steering",
     ".qoder/rules",
     ".clinerules",
@@ -73,8 +73,8 @@ def write(rendered: dict[str, str], root: Path) -> None:
 def clean(root: Path, rendered: dict[str, str] | None = None) -> int:
     """Delete generated output, leaving each directory and its .gitkeep behind.
 
-    Files an emitter writes outside a generated directory (AGENTS.md and the
-    Copilot repo-wide file) have no skeleton to preserve, so they go too.
+    Files an emitter writes outside a generated directory (AGENTS.md) have no
+    skeleton to preserve, so they go too.
 
     Pass `rendered` to scope the wipe to one format's output; the paths it owns
     come from the render itself, so cleaning one format never touches another.
