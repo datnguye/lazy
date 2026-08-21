@@ -16,14 +16,14 @@ def test_plugin_tree_is_separate_from_the_claude_one(src):
     assert not any(p.startswith("plugins/") for p in out)
 
 
-def test_marketplace_source_is_relative_to_the_marketplace_root(src):
-    """Copilot resolves source against the marketplace dir, not the repo root."""
-    raw = copilot.emit(src)[f"{copilot.PLUGIN_ROOT}/{copilot.MANIFEST_DIR}/marketplace.json"]
-    assert json.loads(raw)["plugins"][0]["source"] == "./lazy"
+def test_marketplace_lives_at_the_repo_root(src):
+    """`marketplace add` reads only a root manifest, so source spans the tree."""
+    raw = copilot.emit(src)[f"{copilot.MANIFEST_DIR}/marketplace.json"]
+    assert json.loads(raw)["plugins"][0]["source"] == f"./{copilot.PLUGIN_ROOT}/lazy"
 
 
 def test_marketplace_declares_no_plugin_root(src):
-    raw = copilot.emit(src)[f"{copilot.PLUGIN_ROOT}/{copilot.MANIFEST_DIR}/marketplace.json"]
+    raw = copilot.emit(src)[f"{copilot.MANIFEST_DIR}/marketplace.json"]
     assert "pluginRoot" not in raw
 
 

@@ -22,6 +22,7 @@ KEEP = ".gitkeep"
 GENERATED_DIRS = (
     "plugins",
     "plugins-copilot",
+    ".plugin",
     ".agents/skills",
     ".cursor/rules",
     ".windsurf/rules",
