@@ -30,6 +30,12 @@ copilot plugin install lazy@datnguye
 Both ship the same 3 skills and activate lazy mode on every new session, so
 you can forget it is there — which is the whole point.
 
+## Support
+
+If lazy saved you a few hundred lines, the laziest way to say thanks:
+
+[![buy me a coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?logo=buy-me-a-coffee&logoColor=white&labelColor=ff813f&style=for-the-badge)](https://www.buymeacoffee.com/datnguye)
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
