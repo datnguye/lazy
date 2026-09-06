@@ -48,7 +48,7 @@ jobs:
 
       - name: Activation hook injects the ladder
         run: |
-          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+          python3 plugins-copilot/lazy/hooks/lazy.py sessionStart \
             | jq -e '.additionalContext | contains("Needs to exist at all")'
 
   install:
@@ -76,5 +76,7 @@ jobs:
 
       - name: Activation hook injects the ladder
         run: |
-          python3 ~/.copilot/installed-plugins/datnguye/lazy/hooks/lazy.py sessionStart \
+          hook=$(find ~/.copilot -path '*/lazy/hooks/lazy.py' -print -quit)
+          test -n "$hook" || { echo "no lazy.py under ~/.copilot"; exit 1; }
+          python3 "$hook" sessionStart \
             | jq -e '.additionalContext | contains("Needs to exist at all")'

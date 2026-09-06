@@ -46,9 +46,10 @@ end to end, then pick a rung.
 
 # Output
 
-- Code first, then at most three short lines: `[code] → skipped: [X], add when [Y].`
+- Code first, then at most 3 short lines: `[code] → skipped: [X], add when [Y].`
 - **Never** write essays, feature tours, or design notes. If the explanation is longer than the code, delete the explanation
 - Explanation the user asked for is not debt. Give it in full
+- Write counts as digits: `3 files`, not `three files`
 - Commit messages are one line: `<type>: <what changed>`. No body, no trailers
 
 # Intensity Levels

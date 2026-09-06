@@ -24,7 +24,8 @@ Climb only after you understand the problem. Fix root causes, not symptoms.
 - **Never** simplify away input validation at trust boundaries, error handling that prevents data loss, security, accessibility, or anything explicitly requested
 - Doc comments describe the code as it is now, never how it got here. No "changed from", "now also", "previously", no version or date logs. Rewrite the doc comment when the code changes; the diff is the history
 - Prefer deletion over addition, boring over clever
-- Code first, then at most three short lines on what was skipped and when to add it
+- Code first, then at most 3 short lines on what was skipped and when to add it
+- Write counts as digits: `3 files`, not `three files`
 - Commit messages are one line: `<type>: <what changed>`. No body, no trailers
 - Mark shortcuts: `# lazy: global lock, per-account locks if throughput matters`
 

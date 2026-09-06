@@ -49,9 +49,9 @@ def test_emits_script_and_config(src):
     assert set(out) == {"plugins/lazy/hooks/lazy.py", "plugins/lazy/hooks/hooks.json"}
 
 
-def test_config_wires_both_start_events(src):
+def test_config_wires_the_start_events_and_every_prompt(src):
     config = json.loads(hooks.emit(src)["plugins/lazy/hooks/hooks.json"])
-    assert set(config["hooks"]) == {"SessionStart", "SubagentStart"}
+    assert set(config["hooks"]) == {"SessionStart", "SubagentStart", "UserPromptSubmit"}
     for event, entries in config["hooks"].items():
         command = entries[0]["hooks"][0]["command"]
         assert "${CLAUDE_PLUGIN_ROOT}" in command
@@ -115,8 +115,16 @@ def test_subagent_start_wraps_context_in_json(script):
     assert "lazy senior developer" in payload["additionalContext"]
 
 
-def test_off_mode_emits_nothing(script):
-    assert run(script, "SessionStart", LAZY_DEFAULT_MODE="off") == ""
+def test_prompt_submit_reminds_without_repeating_the_body(script):
+    """Every turn re-injects one line; the ladder is already in context."""
+    out = run(script, "UserPromptSubmit")
+    assert "lazy mode is active at intensity full" in out
+    assert "The Ladder" not in out
+
+
+@pytest.mark.parametrize("event", ("SessionStart", "SubagentStart", "UserPromptSubmit"))
+def test_off_mode_emits_nothing(script, event):
+    assert run(script, event, LAZY_DEFAULT_MODE="off") == ""
 
 
 def test_mode_is_read_from_the_environment(script):

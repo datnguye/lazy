@@ -46,9 +46,10 @@ end to end, then pick a rung.
 
 # Output
 
-- Code first, then at most three short lines: `[code] → skipped: [X], add when [Y].`
+- Code first, then at most 3 short lines: `[code] → skipped: [X], add when [Y].`
 - **Never** write essays, feature tours, or design notes. If the explanation is longer than the code, delete the explanation
 - Explanation the user asked for is not debt. Give it in full
+- Write counts as digits: `3 files`, not `three files`
 - Commit messages are one line: `<type>: <what changed>`. No body, no trailers
 
 # Intensity Levels
@@ -74,6 +75,10 @@ Sticks until changed or session end.
 - Say "stop lazy" or "normal mode" to revert. Resume anytime with `/lazy`.
 - The shortest path to done is the right path
 """
+REMINDER = (
+    "lazy mode is active at intensity {mode}. Stop at the first rung of the ladder that "
+    "holds. No unrequested abstractions, no inline comments, shortest working diff."
+)
 
 
 def main() -> int:
@@ -81,6 +86,9 @@ def main() -> int:
     if MODE == "off":
         return 0
     event = sys.argv[1] if len(sys.argv) > 1 else "SessionStart"
+    if event == "UserPromptSubmit":
+        sys.stdout.buffer.write(REMINDER.format(mode=MODE).encode("utf-8"))
+        return 0
     body = INSTRUCTIONS + "\n\nActive intensity: " + MODE + "."
     if event == "SubagentStart":
         body = json.dumps(
