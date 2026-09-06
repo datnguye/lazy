@@ -18,11 +18,16 @@ BANNER = "# Generated from src/ by `lazy render`. Do not edit."
 # Windows lacks `python3`; try the usual names in order.
 INTERPRETERS = ("python3", "python", "py")
 MISSING = "lazy: no Python interpreter found on PATH (tried python3, python, py)"
+LOADING = "Loading lazy mode..."
 
 # SessionStart takes raw stdout; SubagentStart drops it unless wrapped in the
 # hookSpecificOutput JSON form. Both write encoded bytes: the instructions are
 # UTF-8, and a Windows console defaults sys.stdout to cp1252, which raises
 # UnicodeEncodeError on any character outside it.
+#
+# UserPromptSubmit fires every turn, so it re-injects one line rather than the
+# whole ladder: by then the body is already in context, just buried under the
+# session's tool output.
 SCRIPT = '''#!/usr/bin/env python3
 {banner}
 """Inject lazy mode at the start of every Claude Code session."""
@@ -34,6 +39,10 @@ import sys
 MODE = os.environ.get("LAZY_DEFAULT_MODE", "full").strip().lower()
 INSTRUCTIONS = """\
 {instructions}"""
+REMINDER = (
+    "lazy mode is active at intensity {{mode}}. Stop at the first rung of the ladder that "
+    "holds. No unrequested abstractions, no inline comments, shortest working diff."
+)
 
 
 def main() -> int:
@@ -41,6 +50,9 @@ def main() -> int:
     if MODE == "off":
         return 0
     event = sys.argv[1] if len(sys.argv) > 1 else "SessionStart"
+    if event == "UserPromptSubmit":
+        sys.stdout.buffer.write(REMINDER.format(mode=MODE).encode("utf-8"))
+        return 0
     body = INSTRUCTIONS + "\\n\\nActive intensity: " + MODE + "."
     if event == "SubagentStart":
         body = json.dumps(
@@ -73,7 +85,7 @@ def command(script: str, event: str) -> str:
 
 
 def _config(name: str) -> str:
-    """Wire both start events to the generated script.
+    """Wire the start events and every prompt to the generated script.
 
     Windows has no `python3` on PATH: python.org ships `python` plus the `py`
     launcher, and the Microsoft Store stub named `python3` opens the Store
@@ -89,12 +101,12 @@ def _config(name: str) -> str:
                         "type": "command",
                         "command": command(script, event),
                         "timeout": 5,
-                        "statusMessage": "Loading lazy mode...",
+                        "statusMessage": "" if event == "UserPromptSubmit" else LOADING,
                     }
                 ]
             }
         ]
-        for event in ("SessionStart", "SubagentStart")
+        for event in ("SessionStart", "SubagentStart", "UserPromptSubmit")
     }
     return json.dumps({"hooks": hooks}, indent=2) + "\n"
 
